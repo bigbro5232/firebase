@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Welcome to Firebase Hosting</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Welcome to Firebase Hosting</title>
+
+  <!-- update the version number as needed -->
+  <script defer src="/__/firebase/10.13.2/firebase-app-compat.js"></script>
+  <!-- include only the Firebase features as you need -->
+  <script defer src="/__/firebase/10.13.2/firebase-auth-compat.js"></script>
+  <script defer src="/__/firebase/10.13.2/firebase-database-compat.js"></script>
+  <script defer src="/__/firebase/10.13.2/firebase-firestore-compat.js"></script>
+  <script defer src="/__/firebase/10.13.2/firebase-functions-compat.js"></script>
+  <script defer src="/__/firebase/10.13.2/firebase-messaging-compat.js"></script>
+  <script defer src="/__/firebase/10.13.2/firebase-storage-compat.js"></script>
+  <script defer src="/__/firebase/10.13.2/firebase-analytics-compat.js"></script>
+  <script defer src="/__/firebase/10.13.2/firebase-remote-config-compat.js"></script>
+  <script defer src="/__/firebase/10.13.2/firebase-performance-compat.js"></script>
+  <!-- 
+        initialize the SDK after all desired features are loaded, set useEmulator to false
+        to avoid connecting the SDK to running emulators.
+      -->
+  <script defer src="/__/firebase/init.js?useEmulator=true"></script>
+
+</head>
+
+<body>
+  <h1>사원 관리 목록</h1>
+  name: <input type="text" name="name" id="name" value="kim" /><br />
+  dept: <input type="text" name="dept" id="dept" value="관리부" /><br />
+  email: <input type="text" name="email" id="email" value="kim@gmail.com" /><br />
+  job: <input type="text" name="job" id="job" value="관리직" /><br />
+  <button id="insertBtn">저장하기</button>
+  <hr />
+  <ul id="userList">
+  </ul>
+  <script>
+    
+    
+    
+    document.addEventListener('DOMContentLoaded', function () {
+      try {
+        const app = firebase.app();
+        const db = firebase.firestore();
+        const storage = firebase.storage();
+        // console.log(app);
+        console.log(db);
+        // console.log(storage);
+        var userList = [];
+
+
+        function selectAll() {
+          db.collection("users").get().then((querySnapshot) => {
+            userList = [];
+            querySnapshot.forEach((doc) => {
+              // doc.data() is never undefined for query doc snapshots
+              console.log(doc.id, " => ", doc.data());
+              let userData = doc.data();
+              userData.id = doc.id;
+              userList.push(userData);
+            });
+            showList(userList);
+          });
+        }
+        selectAll();
+
+        function deleteUser(btn) {
+          console.log(btn.dataset.id);
+          firebase.firestore().collection("users").doc(btn.dataset.id).delete().then(() => {
+
+            console.log("Document successfully deleted!");
+          }).catch((error) => {
+            console.error("Error removing document: ", error);
+          });
+        }
+
+        function showList(userList) {
+          console.log(userList);
+
+          let html = '';
+          for (let i = 0; i < userList.length; i++) {
+            let user = userList[i];
+            html += `<li>${user.name} | ${user.dept} | ${user.email} | ${user.job} 
+              <button data-id="${user.id}" class="delBtn">delete</li>`;
+          }
+          document.querySelector('#userList').innerHTML = html;
+
+          var delBtnArr = document.querySelectorAll(".delBtn");
+          delBtnArr.forEach(function(btn) {
+            btn.onclick = function() {
+              deleteUser(this);
+              selectAll();
+            }
+          });
+        }
+
+        function insertUser(newData) {
+          db.collection("users").add(newData)
+            .then((docRef) => {
+              console.log("Document written with ID: ", docRef.id);
+              selectAll();
+            })
+            .catch((error) => {
+              console.error("Error adding document: ", error);
+            });
+        }
+
+        document.querySelector('#insertBtn').onclick = function () {
+          let newData = {
+            name: document.querySelector('#name').value,
+            dept: document.querySelector('#dept').value,
+            email: document.querySelector('#email').value,
+            job: document.querySelector('#job').value
+          }
+          console.log(newData);
+          insertUser(newData);
+        }
+
+      } catch (e) {
+        console.error(e);
+      }
+    });
+
+
+    var firebaseConfig = {
+      apiKey: "AIzaSyBsEXuGT1tzqvnge8a-Y95m6r-8VGeizRs",
+      authDomain: "kostajhy.firebaseapp.com",
+      projectId: "kostajhy",
+      storageBucket: "kostajhy.appspot.com",
+      messagingSenderId: "1049990988052",
+      appId: "1:1049990988052:web:df1cca0a9923ce4db48201"
+    };
+    firebase.initializeApp(firebaseConfig);
+  </script>
+</body>
+
+</html>
